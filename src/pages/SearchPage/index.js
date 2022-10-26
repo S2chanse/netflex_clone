@@ -1,20 +1,25 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "../../api/axios";
+import { useDebounce } from "../../hooks/useDebounce";
 import "./SearchPage.css";
 
 export default function SearchPage() {
+  //Detail page를 위한 navigate
+  const navigate = useNavigate();
+  //Search 언어
   const [searchResults, setSearchResults] = useState([]);
   const useQuery = () => {
     return new URLSearchParams(useLocation().search);
   };
 
   let query = useQuery();
-  const searhWords = query.get("q");
-  console.log("searhWords", searhWords);
+  const searhWords = useDebounce(query.get("q"), 0);
   useEffect(() => {
     if (searhWords) {
       fetchSearchMovie(searhWords);
+    } else {
+      navigate("/");
     }
   }, [searhWords]);
 
@@ -37,8 +42,11 @@ export default function SearchPage() {
           if (movie.backdrop_path !== null && movie.media_type !== "person") {
             const movieImgUrl = `https://image.tmdb.org/t/p/w500/${movie.backdrop_path}`;
             return (
-              <div className="movie">
-                <div className="movie__column-poster">
+              <div className="movie" key={movie.id}>
+                <div
+                  className="movie__column-poster"
+                  onClick={() => navigate(`/${movie.id}`)}
+                >
                   <img src={movieImgUrl} alt="movie" className="movie-poster" />
                 </div>
               </div>
